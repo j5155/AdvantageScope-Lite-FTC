@@ -4,8 +4,7 @@ plugins {
 	id("dev.frozenmilk.doc") version "0.0.4"
 }
 
-// TODO: modify
-android.namespace = "com.example.library"
+android.namespace = "page.j5155.RRScopeLite"
 
 // Most FTC libraries will want the following
 ftc {
@@ -16,16 +15,15 @@ ftc {
 		FtcCommon {
 			configurationNames += "testImplementation"
 		}
+		RobotServer
 	}
 }
 
 publishing {
 	publications {
 		register<MavenPublication>("release") {
-			// TODO: modify
-			groupId = "com.example"
-			// TODO: modify
-			artifactId = "Library"
+			groupId = "page.j5155"
+			artifactId = "RRScopeLite"
 
 			artifact(dairyDoc.dokkaHtmlJar)
 			artifact(dairyDoc.dokkaJavadocJar)
