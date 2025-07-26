@@ -82,3 +82,6 @@ lint/tmp/
 
 # kls
 kls_database.db
+
+
+/src/main/assets/as/
