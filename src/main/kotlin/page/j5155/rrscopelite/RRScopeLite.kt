@@ -15,6 +15,7 @@ import org.firstinspires.ftc.ftccommon.external.WebHandlerRegistrar
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 import org.firstinspires.ftc.robotcore.internal.webserver.WebHandler
 import org.firstinspires.ftc.robotserver.internal.webserver.MimeTypesUtil
+import org.firstinspires.ftc.robotserver.internal.webserver.RobotControllerWebHandlers
 import java.io.File
 import java.io.StringWriter
 
@@ -95,10 +96,10 @@ object RRScopeLite {
         registerAssetsUnderPath(webHandlerManager, assetManager, "as", "bundledAssets")
         // register AS bundled and extra assets
         registerASAssets(webHandlerManager)
-
+        // Redirect for trailing slash (or frontend doesn't work)
         webHandlerManager.register(
-            "$WEB_ROOT",
-            newStaticAssetHandler(assetManager, "as/index.html")
+            WEB_ROOT,
+            RobotControllerWebHandlers.Redirection("$WEB_ROOT/")
         )
         webHandlerManager.register(
             "$WEB_ROOT/",
