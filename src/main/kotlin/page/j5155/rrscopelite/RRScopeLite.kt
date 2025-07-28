@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.qualcomm.robotcore.util.RobotLog
 import com.qualcomm.robotcore.util.WebHandlerManager
 import com.qualcomm.robotcore.util.WebServer
 import fi.iki.elonen.NanoHTTPD
@@ -17,6 +18,9 @@ import java.io.File
 
 
 object RRScopeLite {
+    init {
+        RobotLog.i("RRScopeLite START")
+    }
     const val WEB_ROOT = "as"
     const val EXTRA_ASSETS_PATH = "ascope_assets/"
     val EXTRA_ASSETS = File(AppUtil.ROOT_FOLDER, EXTRA_ASSETS_PATH)
@@ -75,6 +79,7 @@ object RRScopeLite {
     @Suppress("unused")
     @WebHandlerRegistrar
     fun attachWebServer(context: Context?, manager: WebHandlerManager) {
+        RobotLog.i("RRScopeLite attachWebServer")
         internalAttachWebServer(manager.webServer)
     }
 
