@@ -1,3 +1,15 @@
+# RRScope: FTC support for AdvantageScope Lite
+
+Web UI available at http://192.168.43.1:8080/as/ .
+It will automatically connect to FTC Dashboard if available;
+NetworkTables can also be selected from the preferences menu.
+
+Custom assets may be uploaded to the sdcard/ascope_assets folder on the Control Hub.
+They will be automatically added after an app restart (or power cycle).
+
+TODO: Log support
+
+
 # Gradle Tasks
 
 ## Publishing
