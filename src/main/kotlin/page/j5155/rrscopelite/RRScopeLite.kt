@@ -78,6 +78,7 @@ object RRScopeLite {
 
     @Suppress("unused")
     @WebHandlerRegistrar
+    @JvmStatic
     fun attachWebServer(context: Context?, manager: WebHandlerManager) {
         RobotLog.i("RRScopeLite attachWebServer")
         internalAttachWebServer(manager.webServer)
