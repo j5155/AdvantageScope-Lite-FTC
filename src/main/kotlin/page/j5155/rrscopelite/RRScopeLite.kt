@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotserver.internal.webserver.MimeTypesUtil
 import java.io.File
 
 
+@Suppress("unused")
 object RRScopeLite {
     init {
         RobotLog.i("RRScopeLite START")
