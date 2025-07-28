@@ -9,6 +9,8 @@ They will be automatically added after an app restart (or power cycle).
 
 TODO: Log support
 
+Build by symlinking in the lite output from https://github.com/j5155/AdvantageScope/tree/ftc-lite-working
+
 
 # Gradle Tasks
 
