@@ -125,6 +125,7 @@ object RRScopeLite {
     private fun assetListHandler(): WebHandler {
         return object : WebHandler {
             override fun getResponse(session: IHTTPSession): NanoHTTPD.Response {
+                RobotLog.i("RRScopeLite assetList")
                 if (session.method == NanoHTTPD.Method.GET) {
                     // order matters;
                     // if an extra asset is added with the same name as a bundled asset,
