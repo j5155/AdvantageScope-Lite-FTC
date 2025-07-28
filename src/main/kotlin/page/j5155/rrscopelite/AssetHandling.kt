@@ -58,7 +58,7 @@ fun registerAssetsUnderPath(webHandlerManager: WebHandlerManager, assetManager: 
         val list = assetManager.list(path) ?: return
         if (list.isNotEmpty()) {
             for (file in list) {
-                if (file == except) return
+                if (file == except) continue
                 registerAssetsUnderPath(webHandlerManager, assetManager, "$path/$file")
             }
         } else {

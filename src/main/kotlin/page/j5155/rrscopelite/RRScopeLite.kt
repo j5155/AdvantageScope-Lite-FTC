@@ -4,25 +4,23 @@ import android.content.Context
 import android.content.res.AssetManager
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.google.gson.internal.Streams
+import com.google.gson.stream.JsonWriter
 import com.qualcomm.robotcore.util.RobotLog
 import com.qualcomm.robotcore.util.WebHandlerManager
 import com.qualcomm.robotcore.util.WebServer
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.IHTTPSession
 import org.firstinspires.ftc.ftccommon.external.WebHandlerRegistrar
-import org.firstinspires.ftc.robotcore.internal.collections.SimpleGson
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 import org.firstinspires.ftc.robotcore.internal.webserver.WebHandler
 import org.firstinspires.ftc.robotserver.internal.webserver.MimeTypesUtil
 import java.io.File
+import java.io.StringWriter
 
 
-@Suppress("unused")
 object RRScopeLite {
-    init {
-        RobotLog.i("RRScopeLite START")
-    }
-    const val WEB_ROOT = "as"
+    const val WEB_ROOT = "/as"
     const val EXTRA_ASSETS_PATH = "ascope_assets/"
     val EXTRA_ASSETS = File(AppUtil.ROOT_FOLDER, EXTRA_ASSETS_PATH)
     const val BUNDLED_ASSETS_PATH = "as/bundledAssets/"
@@ -45,7 +43,7 @@ object RRScopeLite {
             containedFiles?.forEach { filename ->
                 val path = "$assetPath/$filename"
                 if (filename == "config.json") {
-                    val file = assetManager.open(path).bufferedReader()
+                    val file = assetManager.open(BUNDLED_ASSETS_PATH + path).bufferedReader()
                     bundledAssets.add(path, jsonParser.parse(file))
                     file.close()
                 } else {
@@ -81,7 +79,6 @@ object RRScopeLite {
     @WebHandlerRegistrar
     @JvmStatic
     fun attachWebServer(context: Context?, manager: WebHandlerManager) {
-        RobotLog.i("RRScopeLite attachWebServer")
         internalAttachWebServer(manager.webServer)
     }
 
@@ -90,35 +87,40 @@ object RRScopeLite {
             return
         }
 
+
+
         webHandlerManager = webServer.webHandlerManager
-        webHandlerManager.register(
-            "/$WEB_ROOT",
-            newStaticAssetHandler(assetManager, "as/index.html")
-        )
-        webHandlerManager.register(
-            "/$WEB_ROOT/",
-            newStaticAssetHandler(assetManager, "as/index.html")
-        )
-        webHandlerManager.register(
-            "/$WEB_ROOT/assets",
-            assetListHandler()
-        )
-        webHandlerManager.register(
-            "/$WEB_ROOT/assets/",
-            assetListHandler()
-        )
+
         // register web static assets
         registerAssetsUnderPath(webHandlerManager, assetManager, "as", "bundledAssets")
         // register AS bundled and extra assets
         registerASAssets(webHandlerManager)
+
+        webHandlerManager.register(
+            "$WEB_ROOT",
+            newStaticAssetHandler(assetManager, "as/index.html")
+        )
+        webHandlerManager.register(
+            "$WEB_ROOT/",
+            newStaticAssetHandler(assetManager, "as/index.html")
+        )
+
+        webHandlerManager.register(
+            "$WEB_ROOT/assets",
+            assetListHandler()
+        )
+        webHandlerManager.register(
+            "$WEB_ROOT/assets/",
+            assetListHandler()
+        )
     }
 
     private fun registerASAssets(webHandlerManager: WebHandlerManager) {
         bundledAssets.entrySet().forEach { (path, _) ->
-            webHandlerManager.register(path,newStaticAssetHandler(assetManager,BUNDLED_ASSETS_PATH + path))
+            webHandlerManager.register("$WEB_ROOT/assets/$path",newStaticAssetHandler(assetManager,BUNDLED_ASSETS_PATH + path))
         }
         extraAssets.entrySet().forEach{ (path, _) ->
-            webHandlerManager.register(path, newStaticFileHandler(EXTRA_ASSETS_PATH + path))
+            webHandlerManager.register("$WEB_ROOT/assets/$path", newStaticFileHandler(EXTRA_ASSETS_PATH + path))
         }
     }
 
@@ -126,14 +128,19 @@ object RRScopeLite {
     private fun assetListHandler(): WebHandler {
         return object : WebHandler {
             override fun getResponse(session: IHTTPSession): NanoHTTPD.Response {
-                RobotLog.i("RRScopeLite assetList")
                 if (session.method == NanoHTTPD.Method.GET) {
                     // order matters;
                     // if an extra asset is added with the same name as a bundled asset,
                     // it will override the bundled one
                     val assetFileList = bundledAssets + extraAssets
 
-                    val jsonString = SimpleGson.getInstance().toJson(assetFileList)
+
+                    val jsonStringWriter = StringWriter()
+                    val jsonWriter = JsonWriter(jsonStringWriter)
+                    jsonWriter.serializeNulls = true
+                    Streams.write(assetFileList, jsonWriter)
+
+                    val jsonString = jsonStringWriter.buffer.toString()
 
                     return NanoHTTPD.newFixedLengthResponse(
                         NanoHTTPD.Response.Status.OK,
