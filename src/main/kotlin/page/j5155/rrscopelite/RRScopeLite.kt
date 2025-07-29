@@ -1,17 +1,18 @@
 package page.j5155.rrscopelite
 
+import android.R.attr.path
 import android.content.Context
 import android.content.res.AssetManager
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.internal.Streams
 import com.google.gson.stream.JsonWriter
-import com.qualcomm.robotcore.util.RobotLog
 import com.qualcomm.robotcore.util.WebHandlerManager
 import com.qualcomm.robotcore.util.WebServer
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.IHTTPSession
 import org.firstinspires.ftc.ftccommon.external.WebHandlerRegistrar
+import org.firstinspires.ftc.robotcore.internal.collections.SimpleGson
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 import org.firstinspires.ftc.robotcore.internal.webserver.WebHandler
 import org.firstinspires.ftc.robotserver.internal.webserver.MimeTypesUtil
@@ -114,6 +115,15 @@ object RRScopeLite {
             "$WEB_ROOT/assets/",
             assetListHandler()
         )
+
+        webHandlerManager.register(
+            "$WEB_ROOT/logs",
+            logListHandler()
+        )
+        webHandlerManager.register(
+            "$WEB_ROOT/logs/",
+            logListHandler()
+        )
     }
 
     private fun registerASAssets(webHandlerManager: WebHandlerManager) {
@@ -154,6 +164,49 @@ object RRScopeLite {
                     )
                 }
             }
+        }
+    }
+
+    data class LogFile(@JvmField val name: String, @JvmField val size: Int)
+
+    // Direct, 1:1 port of the log list handling in AdvantageScope lite_server.py
+    // Originally copyright Littleton Robotics. Used under the BSD-3-Clause license.
+    private fun logListHandler(): WebHandler {
+        return WebHandler {
+            val files = ArrayList<LogFile>()
+            if (it.parameters.keys.contains("folder") && it.parameters["folder"]!!.isNotEmpty()) {
+                val folderPath = it.parameters["folder"]!![0]
+                val folder = File(AppUtil.ROOT_FOLDER, folderPath)
+                if (!folder.exists() || !folder.isDirectory) return@WebHandler NanoHTTPD.newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.NOT_FOUND,
+                    NanoHTTPD.MIME_PLAINTEXT, "Requested folder does not exist"
+                )
+
+                for (file in folder.listFiles()!!) {
+                    for (suffix in ALLOWED_LOG_SUFFIXES) {
+                        if (file.name.endsWith(suffix)) {
+                            // technically toInt fails if the log is larger than 4 GB
+                            files.add(LogFile(file.name,file.length().toInt()))
+                            webHandlerManager.register("$WEB_ROOT/logs/${file.name}", newStaticFileHandler(file))
+                            break
+                        }
+                    }
+                }
+
+                val jsonString = SimpleGson.getInstance().toJson(files)
+                println("RRScopeLite log files json $jsonString")
+                return@WebHandler NanoHTTPD.newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.OK,
+                    MimeTypesUtil.MIME_JSON,
+                    jsonString)
+
+            } else {
+                return@WebHandler NanoHTTPD.newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.NOT_FOUND,
+                    NanoHTTPD.MIME_PLAINTEXT, "No folder specified!"
+                )
+            }
+
         }
     }
 }
