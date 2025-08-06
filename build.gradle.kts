@@ -19,6 +19,12 @@ ftc {
 	}
 }
 
+dependencies {
+	implementation("org.zeroturnaround:zt-zip:1.17") {
+		exclude("org.slf4j")
+	}
+}
+
 publishing {
 	publications {
 		register<MavenPublication>("release") {

@@ -24,7 +24,6 @@ object RRScopeLite {
     const val WEB_ROOT = "/as"
     const val EXTRA_ASSETS_PATH = "ascope_assets/"
     val EXTRA_ASSETS = File(AppUtil.ROOT_FOLDER, EXTRA_ASSETS_PATH)
-
     init {
         if (!EXTRA_ASSETS.exists()) EXTRA_ASSETS.mkdir()
     }
@@ -41,8 +40,9 @@ object RRScopeLite {
     init {
         // read and cache config.json for all bundled assets
         // bundled assets cannot change without an app restart, so caching is completely safe
-        val assetManager = AppUtil.getInstance().modalContext.assets
         val bundledAssetFiles = assetManager.list(BUNDLED_ASSETS_PATH)
+        // don't use .walk() here for searching recursively; no assetManager function for it
+        // we control bundledAssets so it won't ever be an issue (TM)
         bundledAssetFiles?.forEach { assetPath ->
             val containedFiles = assetManager.list(BUNDLED_ASSETS_PATH + assetPath)
             containedFiles?.forEach { filename ->
@@ -70,21 +70,17 @@ object RRScopeLite {
      */
     private fun readExtraAssets(): Boolean {
         // read and cache config.json for all extra assets
-        val extraAssetFiles = EXTRA_ASSETS.listFiles()
         val newExtraAssets = JsonObject()
-        extraAssetFiles?.forEach { assetFile ->
-            val containedFiles = assetFile.listFiles()
-            containedFiles?.forEach { file ->
-                val path = assetFile.name + "/" +file.name
+        // use .walk() here to search recursively in subfolders
+        EXTRA_ASSETS.walk().forEach { file ->
+                val path = file.toRelativeString(EXTRA_ASSETS)
                 if (file.name == "config.json") {
                     val fileReader = file.reader()
-
                     newExtraAssets.add(path, jsonParser.parse(fileReader))
                     fileReader.close()
                 } else {
                     newExtraAssets.add(path,null)
                 }
-            }
         }
 
         if (newExtraAssets != extraAssets) {
@@ -114,7 +110,7 @@ object RRScopeLite {
         // register web static assets
         registerAssetsUnderPath(webHandlerManager, assetManager, "as", "bundledAssets")
         // register AS bundled and extra assets
-        registerASAssets(webHandlerManager)
+        registerASAssets()
         // Redirect for trailing slash (or frontend doesn't work)
         webHandlerManager.register(
             WEB_ROOT,
@@ -142,9 +138,18 @@ object RRScopeLite {
             "$WEB_ROOT/logs/",
             logListHandler()
         )
+
+        webHandlerManager.register(
+            "$WEB_ROOT/uploadAsset",
+            AssetUpload(EXTRA_ASSETS)
+        )
+        webHandlerManager.register(
+            "$WEB_ROOT/uploadAsset/",
+            AssetUpload(EXTRA_ASSETS)
+        )
     }
 
-    private fun registerASAssets(webHandlerManager: WebHandlerManager) {
+    private fun registerASAssets() {
         bundledAssets.entrySet().forEach { (path, _) ->
             webHandlerManager.register("$WEB_ROOT/assets/$path",newStaticAssetHandler(assetManager,BUNDLED_ASSETS_PATH + path))
         }
@@ -221,7 +226,6 @@ object RRScopeLite {
                 }
 
                 val jsonString = SimpleGson.getInstance().toJson(files)
-                println("RRScopeLite log files json $jsonString")
                 return@WebHandler NanoHTTPD.newFixedLengthResponse(
                     NanoHTTPD.Response.Status.OK,
                     MimeTypesUtil.MIME_JSON,
