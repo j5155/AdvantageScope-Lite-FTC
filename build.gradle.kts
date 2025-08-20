@@ -21,7 +21,7 @@ ftc {
 
 dependencies {
 	implementation("org.zeroturnaround:zt-zip:1.17") {
-		exclude("org.slf4j")
+		exclude("org.slf4j") // everything breaks without this and I don't know why.
 	}
 }
 

@@ -25,7 +25,7 @@ class AssetUpload(val destinationDir: File): RobotControllerWebHandlers.FileUplo
             uploadedFile.delete()
             return RobotWebHandlerManager.clientBadRequestError(TAG, "Not a zip file!")
         }
-        val outputDir = File(destinationDir.absolutePath + uploadedFile.nameWithoutExtension)
+        val outputDir = File(destinationDir.absolutePath + "/" + uploadedFile.nameWithoutExtension)
         ZipUtil.unpack(uploadedFile,outputDir)
         uploadedFile.delete()
         outputDir.walk().forEach {
