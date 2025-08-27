@@ -6,6 +6,7 @@ NetworkTables can also be selected from the preference menu.
 
 Custom assets may be uploaded as zip files through the File → Upload Asset button.
 Zip files can contain any folder structure, multiple assets, and even other zip files.
+You can download premade assets from https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases
 
 Logs can be opened using the File → Open Logs button.
 It looks for Roadrunner logs by default but supports all AdvantageScope formats;
