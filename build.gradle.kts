@@ -4,7 +4,7 @@ plugins {
 	id("dev.frozenmilk.doc") version "0.0.4"
 }
 
-android.namespace = "page.j5155.RRScopeLite"
+android.namespace = "page.j5155.AdvantageScope"
 
 // Most FTC libraries will want the following
 ftc {
@@ -28,8 +28,8 @@ dependencies {
 publishing {
 	publications {
 		register<MavenPublication>("release") {
-			groupId = "page.j5155"
-			artifactId = "RRScopeLite"
+			groupId = "page.j5155.AdvantageScope"
+			artifactId = "lite"
 
 			artifact(dairyDoc.dokkaHtmlJar)
 			artifact(dairyDoc.dokkaJavadocJar)

@@ -1,13 +1,16 @@
-# RRScope: FTC support for AdvantageScope Lite
+# AdvantageScope Lite for FTC
 
 Web UI is available at http://192.168.43.1:8080/as/ .
 It will automatically connect to FTC Dashboard if available;
 NetworkTables can also be selected from the preference menu.
 
-Custom assets may be uploaded to the sdcard/ascope_assets folder on the Control Hub.
-They will be automatically added after an app restart (or power cycle).
+Custom assets may be uploaded as zip files through the File → Upload Asset button.
+Zip files can contain any folder structure, multiple assets, and even other zip files.
 
-TODO: Log support
+Logs can be opened using the File → Open Logs button.
+It looks for Roadrunner logs by default but supports all AdvantageScope formats;
+the logs folder can be changed in the preferences.
+
 
 Build by symlinking in the lite output from https://github.com/j5155/AdvantageScope/tree/ftc-lite-working
 

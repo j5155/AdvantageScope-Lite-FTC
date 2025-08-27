@@ -1,4 +1,4 @@
-package page.j5155.rrscopelite
+package page.j5155.advantagescope
 
 import android.content.Context
 import android.content.res.AssetManager

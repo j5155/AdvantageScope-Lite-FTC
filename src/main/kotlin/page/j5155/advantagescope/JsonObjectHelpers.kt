@@ -1,4 +1,4 @@
-package page.j5155.rrscopelite
+package page.j5155.advantagescope
 
 import com.google.gson.JsonObject
 
