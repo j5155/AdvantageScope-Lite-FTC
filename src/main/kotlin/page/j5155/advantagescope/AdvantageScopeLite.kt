@@ -68,16 +68,16 @@ object AdvantageScopeLite {
 
     private fun readExtraAssets() {
         // read and cache config.json for all extra assets
-        val newExtraAssets = JsonObject()
+        extraAssets = JsonObject()
         // use .walk() here to search recursively in subfolders
         EXTRA_ASSETS.walk().forEach { file ->
             val path = file.toRelativeString(EXTRA_ASSETS)
             if (file.name == "config.json") {
                 val fileReader = file.reader()
-                newExtraAssets.add(path, jsonParser.parse(fileReader))
+                extraAssets.add(path, jsonParser.parse(fileReader))
                 fileReader.close()
             } else {
-                newExtraAssets.add(path, null)
+                extraAssets.add(path, null)
             }
         }
     }
