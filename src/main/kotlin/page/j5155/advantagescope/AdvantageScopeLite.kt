@@ -20,13 +20,15 @@ import java.io.File
 import java.io.StringWriter
 
 
-object RRScopeLite {
+object AdvantageScopeLite {
     const val WEB_ROOT = "/as"
     const val EXTRA_ASSETS_PATH = "ascope_assets/"
     val EXTRA_ASSETS = File(AppUtil.ROOT_FOLDER, EXTRA_ASSETS_PATH)
+
     init {
         if (!EXTRA_ASSETS.exists()) EXTRA_ASSETS.mkdir()
     }
+
     const val BUNDLED_ASSETS_PATH = "as/bundledAssets/"
     val ALLOWED_LOG_SUFFIXES = arrayOf(".wpilog", ".rlog", ".log")
 
@@ -52,7 +54,7 @@ object RRScopeLite {
                     bundledAssets.add(path, jsonParser.parse(file))
                     file.close()
                 } else {
-                    bundledAssets.add(path,null)
+                    bundledAssets.add(path, null)
                 }
             }
         }
@@ -64,30 +66,19 @@ object RRScopeLite {
         readExtraAssets()
     }
 
-    /**
-     * Returns: whether to update web handlers
-     * todo: does this impl make sense?
-     */
-    private fun readExtraAssets(): Boolean {
+    private fun readExtraAssets() {
         // read and cache config.json for all extra assets
         val newExtraAssets = JsonObject()
         // use .walk() here to search recursively in subfolders
         EXTRA_ASSETS.walk().forEach { file ->
-                val path = file.toRelativeString(EXTRA_ASSETS)
-                if (file.name == "config.json") {
-                    val fileReader = file.reader()
-                    newExtraAssets.add(path, jsonParser.parse(fileReader))
-                    fileReader.close()
-                } else {
-                    newExtraAssets.add(path,null)
-                }
-        }
-
-        if (newExtraAssets != extraAssets) {
-            extraAssets = newExtraAssets
-            return true
-        } else {
-            return false
+            val path = file.toRelativeString(EXTRA_ASSETS)
+            if (file.name == "config.json") {
+                val fileReader = file.reader()
+                newExtraAssets.add(path, jsonParser.parse(fileReader))
+                fileReader.close()
+            } else {
+                newExtraAssets.add(path, null)
+            }
         }
     }
 
@@ -151,9 +142,12 @@ object RRScopeLite {
 
     private fun registerASAssets() {
         bundledAssets.entrySet().forEach { (path, _) ->
-            webHandlerManager.register("$WEB_ROOT/assets/$path",newStaticAssetHandler(assetManager,BUNDLED_ASSETS_PATH + path))
+            webHandlerManager.register(
+                "$WEB_ROOT/assets/$path",
+                newStaticAssetHandler(assetManager, BUNDLED_ASSETS_PATH + path)
+            )
         }
-        extraAssets.entrySet().forEach{ (path, _) ->
+        extraAssets.entrySet().forEach { (path, _) ->
             webHandlerManager.register("$WEB_ROOT/assets/$path", newStaticFileHandler(EXTRA_ASSETS_PATH + path))
         }
     }
@@ -163,13 +157,12 @@ object RRScopeLite {
         return object : WebHandler {
             override fun getResponse(session: IHTTPSession): NanoHTTPD.Response {
                 if (session.method == NanoHTTPD.Method.GET) {
-                    if (readExtraAssets()) { // check the extra assets folder, and if there are more assets register them
-                        extraAssets.entrySet().forEach { (path, _) ->
-                            webHandlerManager.register(
-                                "$WEB_ROOT/assets/$path",
-                                newStaticFileHandler(EXTRA_ASSETS_PATH + path)
-                            )
-                        }
+                    readExtraAssets()
+                    extraAssets.entrySet().forEach { (path, _) ->
+                        webHandlerManager.register(
+                            "$WEB_ROOT/assets/$path",
+                            newStaticFileHandler(EXTRA_ASSETS_PATH + path)
+                        )
                     }
 
                     // order matters;
@@ -218,7 +211,7 @@ object RRScopeLite {
                     for (suffix in ALLOWED_LOG_SUFFIXES) {
                         if (file.name.endsWith(suffix)) {
                             // technically toInt fails if the log is larger than 4 GB
-                            files.add(LogFile(file.name,file.length().toInt()))
+                            files.add(LogFile(file.name, file.length().toInt()))
                             webHandlerManager.register("$WEB_ROOT/logs/${file.name}", newStaticFileHandler(file))
                             break
                         }
@@ -229,7 +222,8 @@ object RRScopeLite {
                 return@WebHandler NanoHTTPD.newFixedLengthResponse(
                     NanoHTTPD.Response.Status.OK,
                     MimeTypesUtil.MIME_JSON,
-                    jsonString)
+                    jsonString
+                )
 
             } else {
                 return@WebHandler NanoHTTPD.newFixedLengthResponse(
