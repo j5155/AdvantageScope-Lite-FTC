@@ -40,7 +40,7 @@ repositories {
 Then add AdvantageScope to the `dependencies` block:
 ```groovy
 dependencies {
-    implementation("page.j5155.AdvantageScope:v26.0.0")
+    implementation("page.j5155.AdvantageScope:lite:v26.0.0")
 }
 ```
 
