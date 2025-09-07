@@ -25,7 +25,8 @@ class AssetUpload(val destinationDir: File): RobotControllerWebHandlers.FileUplo
             uploadedFile.delete()
             return RobotWebHandlerManager.clientBadRequestError(TAG, "Not a zip file!")
         }
-        val outputDir = File(destinationDir.absolutePath + "/" + uploadedFile.nameWithoutExtension)
+        val tempDir = File(destinationDir.absolutePath + "/TEMP/")
+        val outputDir = File(tempDir.absolutePath + "/" + uploadedFile.nameWithoutExtension)
         ZipUtil.unpack(uploadedFile,outputDir)
         uploadedFile.delete()
         outputDir.walk().forEach {
@@ -34,6 +35,14 @@ class AssetUpload(val destinationDir: File): RobotControllerWebHandlers.FileUplo
                 it.delete()
             }
         }
+        outputDir.walk().forEach {
+            if (it.name == "config.json") {
+                val folder = File(it.parent ?: return RobotWebHandlerManager.internalErrorResponse(TAG, "config.json has no parent?!"))
+                folder.copyRecursively(File("$destinationDir/${folder.name}"),true)
+            }
+        }
+        tempDir.deleteRecursively()
+
 
         return RobotWebHandlerManager.OK_RESPONSE
     }
